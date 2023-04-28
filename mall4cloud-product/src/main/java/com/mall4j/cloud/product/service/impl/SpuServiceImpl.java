@@ -7,16 +7,17 @@ import com.mall4j.cloud.product.dto.*;
 import com.mall4j.cloud.product.mapper.*;
 import com.mall4j.cloud.product.model.*;
 import com.mall4j.cloud.product.service.ISpuService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.mall4j.cloud.product.mapper.SkuDtoToSkuMapper.SKU_INSTANCT;
+import static com.mall4j.cloud.product.mapper.SpuDtoToSpuMapper.INSTANCT;
 
 
 /**
@@ -37,15 +38,9 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, Spu> implements ISpuS
     @Autowired
     private SpuMapper spuMapper;
     @Autowired
-    private CategoryMapper categoryMapper;
-    @Autowired
     private SkuStockMapper skuStockMapper;
     @Autowired
     private SpuDetailMapper spuDetailMapper;
-    @Autowired
-    private SpuDtoToSpuMapper spuDtoToSpuMapper;
-    @Autowired
-    private SkuDtoToSkuMapper skuDtoToSkuMapper;
 
     @Override
     @Transactional
@@ -99,7 +94,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, Spu> implements ISpuS
                 spuSkuAttrValue.setAttrId(spuSkuAttrValueDto.getAttrId());
                 spuSkuAttrValue.setAttrName(spuSkuAttrValueDto.getAttrName());
                 spuSkuAttrValue.setAttrValueId(spuSkuAttrValueDto.getAttrValueId());
-                spuSkuAttrValue.setAttrValueName(spuSkuAttrValue.getAttrValueName());
+                spuSkuAttrValue.setAttrValueName(spuSkuAttrValueDto.getAttrValueName());
                 spuSkuAttrValue.setSpuId(spu.getSpuId());
                 spuSkuAttrValue.setSkuId(sku.getSkuId());
                 spuSkuAttrValueMapper.insert(spuSkuAttrValue);
@@ -159,7 +154,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, Spu> implements ISpuS
     public SpuDto getSpuAndSkuAndAttrById(Long spuId) {
         // 获取 spu 方面的数据
         Spu spu = getById(spuId);
-        SpuDto spuDto = spuDtoToSpuMapper.toDto(spu);
+        SpuDto spuDto = INSTANCT.toDto(spu);
 
         // 获取 sku 方面的数据
         LambdaQueryWrapper<Sku> skuWrapper = new LambdaQueryWrapper<>();
@@ -167,7 +162,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, Spu> implements ISpuS
         List<Sku> skus = skuMapper.selectList(skuWrapper);
 
         for (Sku sku : skus) {
-            SkuDto skuDto = skuDtoToSkuMapper.toDto(sku);
+            SkuDto skuDto = SKU_INSTANCT.toDto(sku);
             LambdaQueryWrapper<SkuStock> skuStockWrapper = new LambdaQueryWrapper<>();
             skuStockWrapper.eq(SkuStock::getSkuId, sku.getSkuId());
             SkuStock skuStock = skuStockMapper.selectOne(skuStockWrapper);
@@ -210,13 +205,13 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, Spu> implements ISpuS
     @Override
     @Transactional
     public void updateSpuAndSkuAndAttr(SpuDto spuDto) {
-        Spu spu = spuDtoToSpuMapper.toEntity(spuDto);
+        Spu spu = INSTANCT.toEntity(spuDto);
         updateById(spu);
 
         List<SkuDto> skuList = spuDto.getSkuList();
         for (SkuDto skuDto : skuList) {
             Sku sku = skuMapper.selectById(skuDto.getSkuId());
-            sku = skuDtoToSkuMapper.toEntity(skuDto);
+            sku = SKU_INSTANCT.toEntity(skuDto);
             skuMapper.updateById(sku);
 
             List<SpuSkuAttrValueDto> spuSkuAttrValues = skuDto.getSpuSkuAttrValues();

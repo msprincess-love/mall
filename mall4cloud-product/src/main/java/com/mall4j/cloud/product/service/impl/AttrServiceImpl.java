@@ -249,7 +249,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrMapper, Attr> implements IA
 
         for (Attr attr : attrs) {
             AttrVo attrVo = new AttrVo();
-            attrVo.setName(attr.getName());
+            BeanUtils.copyProperties(attr ,attrVo);
 
             // 获取每个属性下的attrValue
             LambdaQueryWrapper<AttrValue> attrValueWrapper = new LambdaQueryWrapper<>();
